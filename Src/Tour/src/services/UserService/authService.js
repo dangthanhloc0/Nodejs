@@ -1,5 +1,5 @@
 // services/userService.js
-import { pool } from "../config/db.js";
+import { pool } from "../../config/db.js";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -84,3 +84,4 @@ export const getUserFromToken = async (token) => {
         return { success: false, message: 'Invalid or expired token' };
     }
 };
+ 
