@@ -117,14 +117,15 @@ const createTable = async (tableName, query) => {
 const createAllTable = async () => {
   try {
     await createTable("Users", userTableQuery);
-    await createTable("Tours", tourTableQuery);
+    await createTable('transportertours',transportertourTableQuery);
     await createTable("TypeOfTours", typeoftourTableQuery);
+    await createTable("Tours", tourTableQuery);
+    await createTable("typeoforders",typeoforderTableQuery);
     await createTable("OrderTours", ordertourTableQuery);
     await createTable("DetailTours", detailtourTableQuery);
-    await createTable("typeoforders",typeoforderTableQuery);
     await createTable('scheduletours',scheduletourTableQuery);
     await createTable('scheduletourdetails',scheduletourdetailTableQuery);
-    await createTable('transportertours',transportertourTableQuery);
+
     console.log("All tables created successfully!!");
   } catch (error) {
     console.log("Error creating tables", error);

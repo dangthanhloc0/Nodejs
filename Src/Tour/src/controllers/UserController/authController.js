@@ -1,5 +1,5 @@
-import UserModel from '../models/userModel.js';
-import { registerUser, loginUser, getUserFromToken } from '../services/authService.js';
+import UserModel from '../../models/userModel.js';
+import { registerUser, loginUser, getUserFromToken } from '../../services/UserService/authService.js';
 
 
 // create register method

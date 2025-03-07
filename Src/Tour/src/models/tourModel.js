@@ -6,7 +6,6 @@ class tourModel {
       this.startplace = tour.startplace;
       this.endplace = tour.endplace;
       this.title=user.title;
-      this.name = tour.name;
       this.day_number = tour.day_number;
       this.night_number = tour.night_number;
       this.image = tour.image;
