@@ -15,7 +15,7 @@ export const getAllTourApi =  async (req, res) => {
     } catch (error) {
         console.error('Error in user registration:', error);
         return res.status(500).json({ 
-            success: false, 
+            state: false, 
             message: 'get All tour failed. Please try again later.' 
         });
     }
@@ -37,7 +37,7 @@ export const createTourApi = async (req, res) => {
     try {
         // Register user using auth service
         const response = await createTour(tour);
-        if (response.success) {
+        if (response.state) {
             return res.status(201).json(response);
         } else {
             return res.status(400).json(response);
@@ -45,7 +45,7 @@ export const createTourApi = async (req, res) => {
     } catch (error) {
         console.error('Error in user registration:', error);
         return res.status(500).json({ 
-            success: false, 
+            state: false, 
             message: 'create tour failed. Please try again later.' 
         });
     }
