@@ -4,7 +4,11 @@ import { pool } from "../../config/db.js";
 // get all tour 
 export const getAllTour = async () => {
     try {
-        const [tours] = await pool.query('SELECT * FROM tours');
+        const query = `SELECT * ,tt.name as tyoftour_name
+                       FROM tours t
+                            JOIN typeoftours tt ON t.typeoftours_id = tt.id
+                       `
+        const [tours] = await pool.query(query);
         
         if (tours.length === 0) {
             return { state: false, message: 'No tours found', data: [] };
@@ -20,8 +24,8 @@ export const getAllTour = async () => {
 // create tour 
 export const createTour = async (tour) => {
     try {
-        const query = `INSERT INTO tours (name, typeoftours_id, endplace, title,, day_number, night_number, image ) VALUES (?, ?, ?, ?, ?, ?, ?)`;
-        const values = [tour.name, tour.typeoftours_id, tour.endplace, tour.title,tour.day_number, tour.night_number, tour.image];
+        const query = `INSERT INTO tours (name, typeoftours_id, endplace, title, day_number, night_number, image,startplace ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+        const values = [tour.name, tour.typeoftours_id, tour.endplace, tour.title,tour.day_number, tour.night_number, tour.image, tour.startplace];
         await pool.query(query, values);
         return {state : true,message :'create tour successfully'};
     } catch(error){

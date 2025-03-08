@@ -24,14 +24,15 @@ export const getAllTourApi =  async (req, res) => {
 
 // create tour enpoint 
 export const createTourApi = async (req, res) => {
-    const { name, typeoftours_id, endplace, title, day_number, night_number, image } = req.body;
+    const { name, typeoftours_id, endplace, title, day_number, night_number, image , startplace} = req.body;
+    console.log(req.body);
     // Validate required fields
-    if (!name || !typeoftours_id || !endplace || !title || !day_number || !night_number || !image) {
-        return res.status(400).json({ success: false, message: 'All fields are required' });
+    if (!name || !typeoftours_id || !endplace || !title || !day_number || !night_number || !image || !startplace) {
+        return res.status(400).json({ state: false, message: 'All fields are required' });
     }
 
     // Create user instance
-    const tour = new tourModel({name, typeoftours_id, endplace, title, day_number, night_number, image });
+    const tour = new tourModel({name, typeoftours_id, endplace, title, day_number, night_number, image, startplace });
 
     try {
         // Register user using auth service
