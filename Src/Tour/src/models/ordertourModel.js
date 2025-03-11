@@ -4,7 +4,7 @@ class ordertourModel {
      this.user_id = ordertour.user_id;
      this.numberpeople = ordertour.numberpeople;
      this.totalprice = ordertour.totalprice;
-     this.date = ordertour.date;
+     this.detailtour_id = ordertour.detailtour_id;
     }
 }
 

@@ -1,7 +1,7 @@
-class typeoforder{
+class typeoforderModel{
     constructor(typeoforder){
         this.name = typeoforder.name;
     }
 }
 
-export default typeoforder;
+export default typeoforderModel;

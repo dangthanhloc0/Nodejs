@@ -45,17 +45,12 @@ const typeoforderTableQuery = `CREATE TABLE IF NOT EXISTS typeoforders (
   name VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );`;
-// Create OrderTours Table
-const ordertourTableQuery = `CREATE TABLE IF NOT EXISTS ordertours (
+
+// Create transporter of tour Table
+const transportertourTableQuery = `CREATE TABLE IF NOT EXISTS transportertours (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  typeoforderid INT NOT NULL,
-  user_id INT NOT NULL,
-  numberpeople INT NOT NULL,
-  totalprice DOUBLE NOT NULL,
-  date DATETIME NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-  FOREIGN KEY (typeoforderid) REFERENCES  typeoforders(id) ON DELETE CASCADE
+  name VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );`;
 
 // Create DetailTours Table
@@ -66,24 +61,28 @@ const detailtourTableQuery = `CREATE TABLE IF NOT EXISTS detailtours (
   description VARCHAR(255) NOT NULL,
   numberpeoplebooked INT NOT NULL,
   numerseatunoccupied INT NOT NULL,
-  transportertourd INT NOT NULL,
+  transportertourid INT NOT NULL,
   price DOUBLE NOT NULL,
-  ordertour_id INT NOT NULL,
   tour_id INT NOT NULL,
-  typeoftour_id INT NOT NULL,
-  name VARCHAR(255) NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (ordertour_id) REFERENCES ordertours(id) ON DELETE CASCADE,
   FOREIGN KEY (tour_id) REFERENCES tours(id) ON DELETE CASCADE,
-  FOREIGN KEY (transportertourd) REFERENCES transportertours(id) ON DELETE CASCADE
+  FOREIGN KEY (transportertourid) REFERENCES transportertours(id) ON DELETE CASCADE
+);`;
+// Create OrderTours Table
+const ordertourTableQuery = `CREATE TABLE IF NOT EXISTS ordertours (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  typeoforderid INT NOT NULL,
+  user_id INT NOT NULL,
+  numberpeople INT NOT NULL,
+  totalprice DOUBLE NOT NULL,
+  date DATETIME NOT NULL,
+  detailtour_id INT NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (typeoforderid) REFERENCES  typeoforders(id) ON DELETE CASCADE,
+  FOREIGN KEY (detailtour_id) REFERENCES detailtours(id) ON DELETE CASCADE
 );`;
 
-// Create transporter of tour Table
-const transportertourTableQuery = `CREATE TABLE IF NOT EXISTS transportertours (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(255) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);`;
 
 const scheduletourTableQuery = `CREATE TABLE IF NOT EXISTS scheduletours (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -121,8 +120,8 @@ const createAllTable = async () => {
     await createTable("TypeOfTours", typeoftourTableQuery);
     await createTable("Tours", tourTableQuery);
     await createTable("typeoforders",typeoforderTableQuery);
-    await createTable("OrderTours", ordertourTableQuery);
     await createTable("DetailTours", detailtourTableQuery);
+    await createTable("OrderTours", ordertourTableQuery);
     await createTable('scheduletours',scheduletourTableQuery);
     await createTable('scheduletourdetails',scheduletourdetailTableQuery);
 
