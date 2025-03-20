@@ -1,14 +1,53 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaEnvelope, FaLock, FaFacebookF, FaGoogle } from "react-icons/fa";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { login } = useAuth();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        console.log("Email:", email, "Password:", password);
+        setError("");
+        setLoading(true);
+        
+        try {
+            // Make API call to login endpoint
+            const response = await axios.post("http://localhost:3000/api/auth/login", {
+                email,
+                password
+            });
+            
+            // Handle successful login
+            if (response.data.success) {
+                // Use the login function from AuthContext
+                const decodedToken = login(response.data.token);
+                
+                // Redirect based on user type
+                if (decodedToken.userType === "admin") {
+                    navigate("/admin");
+                } else {
+                    navigate("/");
+                }
+            }
+        } catch (error) {
+            // Handle login error
+            console.error("Login error:", error);
+            if (error.response && error.response.data) {
+                setError(error.response.data.message || "Login failed. Please try again.");
+            } else {
+                setError("Network error. Please check your connection.");
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -60,6 +99,17 @@ export default function Login() {
                         </h2>
                         <p className="text-gray-600 mt-2">Đăng nhập để khám phá những điểm đến tuyệt vời</p>
                     </motion.div>
+
+                    {/* Display error message if any */}
+                    {error && (
+                        <motion.div 
+                            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                        >
+                            {error}
+                        </motion.div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <motion.div
@@ -113,11 +163,17 @@ export default function Login() {
 
                         <motion.button 
                             type="submit" 
-                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                            className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex justify-center"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
+                            disabled={loading}
                         >
-                            Đăng Nhập
+                            {loading ? (
+                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : "Đăng Nhập"}
                         </motion.button>
 
                         <motion.div

@@ -1,9 +1,21 @@
 import { NavLink } from "react-router";
 import { motion } from "framer-motion";
-import { FaRegCalendarAlt, FaSignInAlt, FaUserPlus, FaSearch, FaPhone, FaMapMarkerAlt } from "react-icons/fa";
+import { FaRegCalendarAlt, FaSignInAlt, FaUserPlus, FaSearch, FaPhone, FaMapMarkerAlt, FaUser, FaSignOutAlt } from "react-icons/fa";
 import { IoMdHelpCircleOutline } from "react-icons/io";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
+import { useAuth } from "../context/AuthContext";
 
 export default function Header() {
+  const { user, isLoggedIn, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <div className="fixed w-full z-50">
       {/* Top Bar */}
@@ -78,31 +90,44 @@ export default function Header() {
 
           {/* Auth Buttons */}
           <div className="flex items-center space-x-4">
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <NavLink 
-                to="/login" 
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg text-blue-600 hover:bg-blue-50 transition-colors"
-              >
-                <FaSignInAlt className="text-lg" />
-                <span>Đăng Nhập</span>
-              </NavLink>
-            </motion.div>
-
-            <motion.div
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <NavLink 
-                to="/register" 
-                className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 transition-colors"
-              >
-                <FaUserPlus className="text-lg" />
-                <span>Đăng Ký</span>
-              </NavLink>
-            </motion.div>
+            {isLoggedIn ? (
+              <div className="flex items-center space-x-4">
+                <motion.div 
+                  className="flex items-center bg-blue-50 rounded-full px-4 py-2"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <FaUser className="text-blue-600 mr-2" />
+                  <span className="text-gray-800 font-medium">{user?.username}</span>
+                </motion.div>
+                
+                <motion.button
+                  onClick={handleLogout}
+                  className="flex items-center text-red-500 hover:text-red-600 transition-colors"
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <FaSignOutAlt className="mr-1" />
+                  <span>Đăng xuất</span>
+                </motion.button>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link 
+                  to="/login" 
+                  className="px-4 py-2 border border-blue-500 text-blue-500 rounded-lg hover:bg-blue-50 transition-colors"
+                >
+                  Đăng nhập
+                </Link>
+                <Link 
+                  to="/register" 
+                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+                >
+                  Đăng ký
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </motion.nav>
