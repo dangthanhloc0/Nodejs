@@ -2,25 +2,63 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { FaUser, FaEnvelope, FaLock, FaFacebookF, FaGoogle, FaPlane } from "react-icons/fa";
 import { MdBeachAccess } from "react-icons/md";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Register() {
     const [username, setUserName] = useState("");
     const [email, setEmail] = useState("");
+    const [mobile, setMobile] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { login } = useAuth();
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError("");
+        setLoading(true);
+
         if (password !== confirmPassword) {
-            alert("Mật khẩu xác nhận không khớp!");
+            setError("Mật khẩu xác nhận không khớp!");
+            setLoading(false);
             return;
         }
-        console.log("Email:", email, "Password:", password);
+
+        try {
+            const response = await axios.post("http://localhost:3000/api/auth/register-user", {
+                username,
+                email,
+                mobile,
+                password,
+                confirmPassword,
+                userType: "user"
+            });
+
+            if (response.data.success) {
+                // Đăng nhập và lưu token
+                const decodedToken = login(response.data.token);
+                
+                // Chuyển hướng ngay lập tức đến trang chủ
+                navigate("/");
+            }
+        } catch (error) {
+            console.error("Register Fail:", error);
+            if (error.response && error.response.data) {
+                setError(error.response.data.message || "Đăng ký thất bại. Vui lòng thử lại.");
+            } else {
+                setError("Lỗi kết nối mạng. Vui lòng kiểm tra kết nối.");
+            }
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
         <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50">
-            {/* Animated background elements */}
             <motion.div 
                 className="absolute top-[-5%] left-[-5%] w-[400px] h-[400px] rounded-full bg-blue-500 opacity-10"
                 animate={{
@@ -46,7 +84,6 @@ export default function Register() {
                 }}
             />
 
-            {/* Floating Icons */}
             <motion.div
                 className="absolute top-[20%] right-[10%] text-blue-400 opacity-20"
                 animate={{
@@ -83,7 +120,6 @@ export default function Register() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.8, ease: "easeOut" }}
                 >
-                    {/* Decorative elements */}
                     <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 via-purple-500 to-indigo-500" />
                     
                     <motion.div
@@ -97,6 +133,17 @@ export default function Register() {
                         </h2>
                         <p className="text-gray-600 mt-2">Đăng ký để khám phá những điểm đến tuyệt vời</p>
                     </motion.div>
+
+                    {error && (
+                        <motion.div 
+                            className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-4"
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            transition={{ duration: 0.3 }}
+                        >
+                            {error}
+                        </motion.div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="space-y-5">
                         <motion.div
@@ -112,6 +159,7 @@ export default function Register() {
                                     className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm" 
                                     value={username} 
                                     onChange={(e) => setUserName(e.target.value)}
+                                    required
                                 />
                             </div>
                         </motion.div>
@@ -129,6 +177,25 @@ export default function Register() {
                                     className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm" 
                                     value={email} 
                                     onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, x: -50 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: 0.5 }}
+                        >
+                            <div className="relative">
+                                <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                                <input 
+                                    type="tel"
+                                    placeholder="Số điện thoại của bạn"
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm" 
+                                    value={mobile} 
+                                    onChange={(e) => setMobile(e.target.value)}
+                                    required
                                 />
                             </div>
                         </motion.div>
@@ -146,6 +213,7 @@ export default function Register() {
                                     className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm" 
                                     value={password} 
                                     onChange={(e) => setPassword(e.target.value)}
+                                    required
                                 />
                             </div>
                         </motion.div>
@@ -163,17 +231,24 @@ export default function Register() {
                                     className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 bg-white/50 backdrop-blur-sm" 
                                     value={confirmPassword} 
                                     onChange={(e) => setConfirmPassword(e.target.value)}
+                                    required
                                 />
                             </div>
                         </motion.div>
 
                         <motion.button 
                             type="submit" 
-                            className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300"
+                            className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 text-white py-3 rounded-xl font-medium shadow-lg hover:shadow-xl transition-all duration-300 flex justify-center items-center"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.98 }}
+                            disabled={loading}
                         >
-                            Đăng Ký Ngay
+                            {loading ? (
+                                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            ) : "Đăng Ký Ngay"}
                         </motion.button>
 
                         <motion.div
