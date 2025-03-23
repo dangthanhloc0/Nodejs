@@ -106,7 +106,7 @@ const scheduletourdetailTableQuery = `CREATE TABLE IF NOT EXISTS scheduletourdet
 const createTable = async (tableName, query) => {
   try {
     await pool.query(query);
-    console.log(`${tableName} table created or already exists`);
+    console.log(`${tableName} table created or already exists`);  
   } catch (error) {
     console.log(`Error creating ${tableName}`, error);
   }
