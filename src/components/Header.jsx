@@ -63,7 +63,7 @@ export default function Header() {
           <div className="flex items-center space-x-8">
             {[
               { path: "/", label: "Trang Chủ", icon: null },
-              { path: "/tours", label: "Tours", icon: <FaRegCalendarAlt /> },
+              { path: "/tour/visit", label: "Tours", icon: <FaRegCalendarAlt /> },
               { path: "/search", label: "Tìm Kiếm", icon: <FaSearch /> },
               { path: "/about", label: "Giới Thiệu", icon: <IoMdHelpCircleOutline /> }
             ].map((link, index) => (

@@ -8,6 +8,7 @@ import Footer from "./components/footer";
 import Login from './pages/Login';
 import Register from "./pages/Register";
 import Admin from "./pages/Admin/Admin";
+import Visit from "./pages/Tour/Visit";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/visit" element={<Visit />} />
         </Routes>
         <Footer />
       </BrowserRouter>
