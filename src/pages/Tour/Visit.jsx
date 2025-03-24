@@ -8,12 +8,14 @@ import 'swiper/css';
 import 'swiper/css/effect-fade';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { useNavigate } from "react-router-dom";
 
 const Visit = () => {
   const [tours, setTours] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTours = async () => {
@@ -30,6 +32,10 @@ const Visit = () => {
 
     fetchTours();
   }, []);
+
+  const handleSearch = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
   const filteredTours = tours.filter(tour =>
     tour.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -53,6 +59,10 @@ const Visit = () => {
       subtitle: "Khám phá văn hóa độc đáo các vùng miền"
     }
   ];
+
+  const handleViewDetail = (tourId) => {
+    navigate(`/tour/${tourId}`);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -110,6 +120,19 @@ const Visit = () => {
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-12">
+        <div className="mb-8">
+          <div className="relative max-w-md mx-auto">
+            <input
+              type="text"
+              placeholder="Tìm kiếm tour..."
+              value={searchTerm}
+              onChange={handleSearch}
+              className="w-full px-4 py-2 pl-10 pr-4 rounded-lg border border-gray-300 focus:outline-none focus:border-blue-500"
+            />
+            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+        </div>
+
         {isLoading ? (
           <div className="flex justify-center items-center min-h-[400px]">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div>
@@ -164,7 +187,10 @@ const Visit = () => {
                       </div>
                     </div>
 
-                    <button className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg transition-colors duration-300">
+                    <button 
+                      onClick={() => handleViewDetail(tour._id)}
+                      className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg transition-colors duration-300"
+                    >
                       Xem Chi Tiết
                     </button>
                   </div>

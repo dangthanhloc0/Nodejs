@@ -9,6 +9,7 @@ import Login from './pages/Login';
 import Register from "./pages/Register";
 import Admin from "./pages/Admin/Admin";
 import Visit from "./pages/Tour/Visit";
+import DetailTour from "./pages/Tour/DetailTour";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/admin" element={<Admin />} />
           <Route path="/visit" element={<Visit />} />
+          <Route path="/tour/:id" element={<DetailTour />} />
         </Routes>
         <Footer />
       </BrowserRouter>
