@@ -1,4 +1,4 @@
-import { NavLink } from "react-router";
+import { NavLink } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaRegCalendarAlt, FaSignInAlt, FaUserPlus, FaSearch, FaPhone, FaMapMarkerAlt, FaUser, FaSignOutAlt } from "react-icons/fa";
 import { IoMdHelpCircleOutline } from "react-icons/io";
@@ -63,7 +63,7 @@ export default function Header() {
           <div className="flex items-center space-x-8">
             {[
               { path: "/", label: "Trang Chủ", icon: null },
-              { path: "/tour/visit", label: "Tours", icon: <FaRegCalendarAlt /> },
+              { path: "/visit", label: "Tours", icon: <FaRegCalendarAlt /> },
               { path: "/search", label: "Tìm Kiếm", icon: <FaSearch /> },
               { path: "/about", label: "Giới Thiệu", icon: <IoMdHelpCircleOutline /> }
             ].map((link, index) => (
