@@ -9,6 +9,7 @@ import 'swiper/css/effect-fade';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { useNavigate } from "react-router-dom";
+import axiosInstance from '../../utils/axiosConfig';
 
 const Visit = () => {
   const [tours, setTours] = useState([]);
@@ -21,10 +22,12 @@ const Visit = () => {
     const fetchTours = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get("http://localhost:3000/api/tour/get-all-tour");
+        const response = await axiosInstance.get("/tour/get-all-tour");
+        console.log("Tours data:", response.data.data);
         setTours(response.data.data || []);
         setIsLoading(false);
       } catch (err) {
+        console.error("Error fetching tours:", err);
         setError(err.message);
         setIsLoading(false);
       }
@@ -61,6 +64,14 @@ const Visit = () => {
   ];
 
   const handleViewDetail = (tourId) => {
+    console.log("Clicked tour ID:", tourId);
+    const token = localStorage.getItem("token");
+    if (!token) {
+      navigate("/login", { 
+        state: { from: `/tour/${tourId}` } 
+      });
+      return;
+    }
     navigate(`/tour/${tourId}`);
   };
 
@@ -147,7 +158,7 @@ const Visit = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredTours.map((tour, index) => (
                 <motion.div
-                  key={tour._id || index}
+                  key={tour.id || tour._id || index}
                   className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300"
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -188,7 +199,11 @@ const Visit = () => {
                     </div>
 
                     <button 
-                      onClick={() => handleViewDetail(tour._id)}
+                      onClick={() => {
+                        console.log("Tour data:", tour);
+                        console.log("Tour ID being used:", tour.id || tour._id);
+                        handleViewDetail(tour.id || tour._id);
+                      }}
                       className="w-full bg-blue-500 hover:bg-blue-600 text-white py-3 rounded-lg transition-colors duration-300"
                     >
                       Xem Chi Tiết
