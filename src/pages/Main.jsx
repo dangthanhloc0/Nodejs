@@ -193,6 +193,7 @@ export default function Main() {
                   
                   <button 
                     className="bg-transparent border-2 border-white text-white px-8 py-4 rounded-full text-lg font-bold hover:bg-white/10 transition-all duration-300"
+                    onClick={() => navigate('/about')}
                   >
                     Tìm hiểu thêm
                   </button>
