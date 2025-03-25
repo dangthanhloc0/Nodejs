@@ -2,12 +2,16 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { FaMapMarkerAlt, FaCalendarAlt, FaUserFriends, FaChevronDown, FaSearch, FaArrowRight } from 'react-icons/fa';
+import axiosInstance from '../utils/axiosConfig';
 
 export default function Main() {
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showSearchDropdown, setShowSearchDropdown] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [featuredTours, setFeaturedTours] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
   
   // Đổi slide tự động
@@ -17,6 +21,59 @@ export default function Main() {
     }, 6000);
     return () => clearInterval(timer);
   }, []);
+
+  // Fetch tours từ API khi component mount
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axiosInstance.get('/tour/get-all-tour');
+        
+        if (response.data.state) {
+          // Lấy 6 tour mới nhất và mapping dữ liệu
+          const latestTours = response.data.data.slice(0, 6).map((tour, index) => ({
+            id: tour.id || tour._id,
+            title: tour.name,
+            location: `${tour.startplace} - ${tour.endplace}`,
+            duration: `${tour.day_number} ngày ${tour.night_number} đêm`,
+            price: `${(Math.random() * 5000000 + 1000000).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}₫`, // Giá demo
+            people: `2-${Math.floor(Math.random() * 15 + 5)} người`, // Số người demo
+            category: getCategoryFromTourType(tour.tyoftour_name || tour.typeoftours_id),
+            featured: index < 3, // 3 tour đầu sẽ được đánh dấu là featured
+            image: tour.image || "https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80"
+          }));
+          
+          setFeaturedTours(latestTours);
+        } else {
+          setError(response.data.message);
+        }
+      } catch (err) {
+        console.error("Error fetching tours:", err);
+        setError(err.message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTours();
+  }, []);
+
+  // Hàm helper để map loại tour sang category
+  const getCategoryFromTourType = (tourType) => {
+    // Map tour type từ API sang category hiển thị
+    const typeMap = {
+      'Beach': 'beach',
+      'Mountain': 'mountain',
+      'Cultural': 'cultural',
+      'Adventure': 'adventure',
+      1: 'beach',
+      2: 'mountain',
+      3: 'cultural',
+      4: 'adventure'
+    };
+    
+    return typeMap[tourType] || 'all';
+  };
 
   // Danh sách slides cho hero section
   const heroSlides = [
@@ -47,76 +104,6 @@ export default function Main() {
     { id: 'mountain', name: 'Núi rừng' },
     { id: 'cultural', name: 'Văn hóa' },
     { id: 'adventure', name: 'Mạo hiểm' }
-  ];
-
-  // Danh sách tours tiêu biểu
-  const featuredTours = [
-    {
-      id: 1,
-      title: "Hạ Long Bay Explorer",
-      location: "Quảng Ninh",
-      duration: "3 ngày 2 đêm",
-      price: "3,599,000₫",
-      people: "2-10 người",
-      category: "beach",
-      featured: true,
-      image: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80"
-    },
-    {
-      id: 2,
-      title: "Sapa Trekking Adventure",
-      location: "Lào Cai",
-      duration: "4 ngày 3 đêm",
-      price: "4,299,000₫",
-      people: "5-12 người",
-      category: "mountain",
-      featured: true,
-      image: "https://images.unsplash.com/photo-1534008897995-27a23e859048?ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80"
-    },
-    {
-      id: 3,
-      title: "Huế - Đà Nẵng - Hội An",
-      location: "Miền Trung",
-      duration: "5 ngày 4 đêm",
-      price: "5,999,000₫",
-      people: "2-15 người",
-      category: "cultural",
-      featured: false,
-      image: "https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80"
-    },
-    {
-      id: 4,
-      title: "Mekong Delta Experience",
-      location: "Miền Tây",
-      duration: "2 ngày 1 đêm",
-      price: "1,899,000₫",
-      people: "2-20 người",
-      category: "cultural",
-      featured: false,
-      image: "https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80"
-    },
-    {
-      id: 5,
-      title: "Phong Nha - Kẻ Bàng",
-      location: "Quảng Bình",
-      duration: "3 ngày 2 đêm",
-      price: "4,599,000₫",
-      people: "4-12 người",
-      category: "adventure",
-      featured: true,
-      image: "https://images.unsplash.com/photo-1586075010923-2dd4570fb338?ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80"
-    },
-    {
-      id: 6,
-      title: "Đà Lạt Mộng Mơ",
-      location: "Lâm Đồng",
-      duration: "4 ngày 3 đêm",
-      price: "3,299,000₫",
-      people: "2-15 người",
-      category: "mountain",
-      featured: false,
-      image: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80"
-    }
   ];
 
   // Lọc tours theo danh mục
@@ -326,66 +313,79 @@ export default function Main() {
           </div>
           
           {/* Tours Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredTours.map((tour, index) => (
-              <motion.div
-                key={tour.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ y: -10 }}
-                className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300"
-              >
-                <div className="relative">
-                  <img 
-                    src={tour.image} 
-                    alt={tour.title}
-                    className="w-full h-64 object-cover"
-                  />
-                  
-                  {tour.featured && (
-                    <div className="absolute top-4 right-4 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
-                      Hot
-                    </div>
-                  )}
-                  
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                    <h3 className="text-white text-xl font-bold">{tour.title}</h3>
-                    <div className="flex items-center text-white/90">
-                      <FaMapMarkerAlt className="mr-1" />
-                      <span>{tour.location}</span>
+          {isLoading ? (
+            <div className="flex justify-center items-center py-20">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-orange-500"></div>
+            </div>
+          ) : error ? (
+            <div className="text-center text-red-500 py-10">
+              <p>Có lỗi xảy ra: {error}</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredTours.map((tour, index) => (
+                <motion.div
+                  key={tour.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ y: -10 }}
+                  className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300"
+                >
+                  <div className="relative">
+                    <img 
+                      src={tour.image} 
+                      alt={tour.title}
+                      className="w-full h-64 object-cover"
+                      onError={(e) => {
+                        e.target.src = "https://images.unsplash.com/photo-1528127269322-539801943592?ixlib=rb-1.2.1&auto=format&fit=crop&w=1650&q=80"; // Fallback image
+                      }}
+                    />
+                    
+                    {tour.featured && (
+                      <div className="absolute top-4 right-4 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full uppercase">
+                        Hot
+                      </div>
+                    )}
+                    
+                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                      <h3 className="text-white text-xl font-bold">{tour.title}</h3>
+                      <div className="flex items-center text-white/90">
+                        <FaMapMarkerAlt className="mr-1" />
+                        <span>{tour.location}</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center text-gray-600">
-                      <FaCalendarAlt className="mr-2 text-orange-500" />
-                      <span>{tour.duration}</span>
-                    </div>
-                    <div className="flex items-center text-gray-600">
-                      <FaUserFriends className="mr-2 text-orange-500" />
-                      <span>{tour.people}</span>
-                    </div>
-                  </div>
                   
-                  <div className="flex justify-between items-center">
-                    <div className="text-2xl font-bold text-orange-500">
-                      {tour.price}
+                  <div className="p-6">
+                    <div className="flex justify-between items-center mb-4">
+                      <div className="flex items-center text-gray-600">
+                        <FaCalendarAlt className="mr-2 text-orange-500" />
+                        <span>{tour.duration}</span>
+                      </div>
+                      <div className="flex items-center text-gray-600">
+                        <FaUserFriends className="mr-2 text-orange-500" />
+                        <span>{tour.people}</span>
+                      </div>
                     </div>
-                    <button 
-                      className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-300"
-                      onClick={() => navigate(`/tour/${tour.id}`)}
-                    >
-                      Chi Tiết
-                      <FaArrowRight />
-                    </button>
+                    
+                    <div className="flex justify-between items-center">
+                      <div className="text-2xl font-bold text-orange-500">
+                        {tour.price}
+                      </div>
+                      <button 
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors duration-300"
+                        onClick={() => navigate(`/tour/${tour.id}`)}
+                      >
+                        Chi Tiết
+                        <FaArrowRight />
+                      </button>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
           
           <div className="text-center mt-12">
             <motion.button
