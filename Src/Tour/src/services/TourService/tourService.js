@@ -52,15 +52,61 @@ export const createDetailTour = async (detailtour) => {
 }
 
 
-// get all detail tour
+// Lấy danh sách tất cả detailtours kèm thông tin của tour
 export const getAllDetailTourByTourId = async (tourId) => {
     try {
-        const query = `SELECT * FROM DetailTours WHERE tour_id = ?`
+        const query = `
+            SELECT 
+                dt.*, 
+                t.name AS tour_name, 
+                t.typeoftours_id, 
+                t.startplace, 
+                t.endplace, 
+                t.title, 
+                t.day_number, 
+                t.night_number, 
+                t.image
+            FROM detailtours dt
+            JOIN tours t ON dt.tour_id = t.id
+            WHERE dt.tour_id = ?;
+        `;
         const values = [tourId];
         const [detailTourList] = await pool.query(query, values);
-        return {state : true , message : 'Get all detail tour successfully' , data : detailTourList };
-    } catch(error){
-        console.error('error when fetching get all detail tour ', error );
-        return {state : false , messgae : 'get all detail tour faild'}
+
+        if (detailTourList.length === 0) {
+            return { state: false, message: 'No detail tours found for this tour ID' };
+        }
+
+        return {
+            state: true,
+            message: 'Get all detail tours successfully',
+            data: {
+                tour: {
+                    id: tourId,
+                    name: detailTourList[0].tour_name,
+                    typeoftours_id: detailTourList[0].typeoftours_id,
+                    startplace: detailTourList[0].startplace,
+                    endplace: detailTourList[0].endplace,
+                    title: detailTourList[0].title,
+                    day_number: detailTourList[0].day_number,
+                    night_number: detailTourList[0].night_number,
+                    image: detailTourList[0].image,
+                },
+                detailTours: detailTourList.map(detail => ({
+                    id: detail.id,
+                    startday: detail.startday,
+                    endday: detail.endday,
+                    description: detail.description,
+                    numberpeoplebooked: detail.numberpeoplebooked,
+                    numerseatunoccupied: detail.numerseatunoccupied,
+                    transportertourid: detail.transportertourid,
+                    price: detail.price,
+                    created_at: detail.created_at
+                }))
+            }
+        };
+    } catch (error) {
+        console.error('Error fetching getAllDetailTourByTourId:', error);
+        return { state: false, message: 'Get all detail tours failed' };
     }
-}
+};

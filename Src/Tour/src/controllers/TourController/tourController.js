@@ -73,26 +73,25 @@ export const createDetailTourMethod = async (req,res) =>{
     return res.status(500).json({status : false , message : 'create detailtour failed'});
   }
     
-}
+};
 
-// get all tour enpoint
-export const getAllDetailTourMethod =  async (req, res) => {
+// API GET all detail tours của một tour
+export const getAllDetailTourMethod = async (req, res) => {
     try {
-        // get id form url
-        const { id }  = req.params;
-        console.log(id);
-        // Register user using auth service
+        const { id } = req.params;
+        console.log("Tour ID:", id);
+
         const response = await getAllDetailTourByTourId(id);
         if (response.state) {
-            return res.status(201).json(response);
+            return res.status(200).json(response);
         } else {
-            return res.status(400).json(response);
+            return res.status(404).json(response);
         }
     } catch (error) {
-        console.error('Error in getAllDetailTourMethod :', error);
-        return res.status(500).json({ 
-            state: false, 
-            message: 'get All detail tour failed. Please try again later.' 
+        console.error('Error in getAllDetailTourMethod:', error);
+        return res.status(500).json({
+            state: false,
+            message: 'Get all detail tour failed. Please try again later.'
         });
     }
 };
