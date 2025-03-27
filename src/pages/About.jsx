@@ -76,7 +76,7 @@ export default function About() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
                     {stats.map((stat, index) => (
                         <motion.div
-                            key={index}
+                            key={`stat-${stat.label}`}
                             className="text-center"
                             initial={{ opacity: 0, y: 20 }}
                             whileInView={{ opacity: 1, y: 0 }}

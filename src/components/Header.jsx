@@ -172,7 +172,7 @@ export default function Header() {
                   { path: "/about", label: "Giới Thiệu", icon: <IoMdHelpCircleOutline /> }
                 ].map((link, index) => (
                   <motion.div
-                    key={index}
+                    key={`menu-${link.path}`}
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                   >

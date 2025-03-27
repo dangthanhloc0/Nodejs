@@ -222,7 +222,7 @@ const Visit = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {filteredTours.map((tour, index) => (
                 <motion.div
-                  key={tour.id || tour._id || index}
+                  key={`tour-${tour.id || tour._id || index}`}
                   className="bg-white rounded-xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300"
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
