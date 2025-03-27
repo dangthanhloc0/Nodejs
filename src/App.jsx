@@ -11,6 +11,7 @@ import Admin from "./pages/Admin/Admin";
 import Visit from "./pages/Tour/Visit";
 import ProtectedRoute from "./components/ProtectedRoute";
 import TourDetail from "./pages/Tour/TourDetail";
+import CreateTour from './pages/Admin/CreateTour';
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
           <Route path="/admin" element={<Admin />} />
           <Route path="/visit" element={<Visit />} />
           <Route path="/tour/:id" element={<TourDetail />} />
+          <Route path="/admin/create-tour" element={<CreateTour />} />
         </Routes>
         <Footer />
       </BrowserRouter>

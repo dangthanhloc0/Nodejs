@@ -23,6 +23,7 @@ export default function Admin() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [currentTour, setCurrentTour] = useState(null);
+  const [selectedTour, setSelectedTour] = useState(null);
   
   // Form state for creating/editing tour
   const [formData, setFormData] = useState({
@@ -122,6 +123,7 @@ export default function Admin() {
         // Replace with your actual API endpoint
         await axios.delete(`http://localhost:3000/api/tours/${tourId}`);
         fetchTours();
+        setSelectedTour(null);
       } catch (error) {
         console.error('Error deleting tour:', error);
       } finally {
@@ -131,30 +133,23 @@ export default function Admin() {
   };
 
   const handleToggleTourStatus = async (tour) => {
-    const newStatus = tour.status === 'active' ? 'inactive' : 'active';
-    setLoading(true);
     try {
-      // Replace with your actual API endpoint
       await axios.patch(`http://localhost:3000/api/tours/${tour.id}/status`, {
-        status: newStatus
+        status: tour.status === 'active' ? 'inactive' : 'active'
       });
       fetchTours();
     } catch (error) {
       console.error('Error toggling tour status:', error);
-    } finally {
-      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-32">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pl-64 pt-20">
       <div className="container mx-auto p-6">
         <motion.div 
           className="bg-white rounded-xl shadow-2xl p-8"
-          variants={pageTransition}
-          initial="initial"
-          animate="animate"
-          exit="exit"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
         >
           <div className="flex justify-between items-center mb-8">
             <div className="flex items-center space-x-4">
@@ -199,10 +194,9 @@ export default function Admin() {
           {/* Tours Management */}
           {activeTab === 'tours' && (
             <motion.div
-              variants={pageTransition}
-              initial="initial"
-              animate="animate"
-              exit="exit"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.3 }}
             >
               <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-semibold text-gray-800">
@@ -227,86 +221,67 @@ export default function Admin() {
                   <FaSpinner className="animate-spin text-blue-600 text-4xl" />
                 </motion.div>
               ) : (
-                <div className="overflow-hidden rounded-xl shadow-lg border border-gray-100">
+                <div className="overflow-x-auto">
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hình ảnh</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thông tin Tour</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Giá</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Trạng thái</th>
-                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Hành động</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tour Details</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-100">
-                      {tours.map((tour, index) => (
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {tours.map((tour) => (
                         <motion.tr 
                           key={tour.id}
-                          variants={tableRowVariants}
-                          initial="initial"
-                          animate="animate"
-                          exit="exit"
-                          transition={{ delay: index * 0.1 }}
-                          className="hover:bg-gray-50 transition-colors duration-200"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="hover:bg-gray-50"
                         >
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="h-16 w-24 rounded-md overflow-hidden bg-gray-100">
-                              <img 
-                                src={tour.image} 
-                                alt={tour.title} 
-                                className="h-full w-full object-cover"
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = 'https://via.placeholder.com/150?text=No+Image';
-                                }}
-                              />
-                            </div>
+                          <td className="px-6 py-4">
+                            <img 
+                              src={tour.image} 
+                              alt={tour.title}
+                              className="h-20 w-32 object-cover rounded-lg"
+                              onClick={() => setSelectedTour(tour)}
+                            />
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-sm font-medium text-gray-900">{tour.title}</div>
                             <div className="text-sm text-gray-500">{tour.location}</div>
+                            <div className="text-sm text-gray-500">Duration: {tour.duration} days</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900 font-semibold">{tour.price}</div>
+                          <td className="px-6 py-4">
+                            <div className="text-sm font-semibold text-gray-900">${tour.price}</div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
+                          <td className="px-6 py-4">
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              tour.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              tour.status === 'active' 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-red-100 text-red-800'
                             }`}>
-                              {tour.status === 'active' ? 'Hiển thị' : 'Ẩn'}
+                              {tour.status === 'active' ? 'Active' : 'Inactive'}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex justify-end gap-2">
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => handleToggleTourStatus(tour)}
-                                className={`p-2 rounded-lg ${
-                                  tour.status === 'active' 
-                                    ? 'bg-red-100 text-red-600 hover:bg-red-200' 
-                                    : 'bg-green-100 text-green-600 hover:bg-green-200'
-                                }`}
-                              >
-                                {tour.status === 'active' ? <FaEyeSlash /> : <FaEye />}
-                              </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => openEditModal(tour)}
-                                className="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200"
-                              >
-                                <FaEdit />
-                              </motion.button>
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={() => handleDeleteTour(tour.id)}
-                                className="p-2 rounded-lg bg-red-100 text-red-600 hover:bg-red-200"
-                              >
-                                <FaTrash />
-                              </motion.button>
-                            </div>
+                          <td className="px-6 py-4 text-right space-x-2">
+                            <button
+                              onClick={() => handleToggleTourStatus(tour)}
+                              className={`inline-flex items-center px-3 py-1 rounded-md text-sm font-medium ${
+                                tour.status === 'active'
+                                  ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                                  : 'bg-green-100 text-green-700 hover:bg-green-200'
+                              }`}
+                            >
+                              {tour.status === 'active' ? 'Deactivate' : 'Activate'}
+                            </button>
+                            <button
+                              onClick={() => handleDeleteTour(tour.id)}
+                              className="inline-flex items-center px-3 py-1 bg-red-100 text-red-700 rounded-md text-sm font-medium hover:bg-red-200"
+                            >
+                              Delete
+                            </button>
                           </td>
                         </motion.tr>
                       ))}
@@ -327,6 +302,40 @@ export default function Admin() {
               <h2 className="text-2xl font-semibold text-gray-700 mb-6">Quản lý Users</h2>
               <p className="text-gray-600">Tính năng đang được phát triển...</p>
             </motion.div>
+          )}
+
+          {/* Tour Detail Modal */}
+          {selectedTour && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <motion.div 
+                className="bg-white rounded-xl p-8 max-w-2xl w-full m-4"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <h2 className="text-2xl font-bold mb-4">{selectedTour.title}</h2>
+                <img 
+                  src={selectedTour.image} 
+                  alt={selectedTour.title}
+                  className="w-full h-64 object-cover rounded-lg mb-4"
+                />
+                <div className="space-y-2">
+                  <p><strong>Location:</strong> {selectedTour.location}</p>
+                  <p><strong>Price:</strong> ${selectedTour.price}</p>
+                  <p><strong>Duration:</strong> {selectedTour.duration} days</p>
+                  <p><strong>Max Group Size:</strong> {selectedTour.maxGroupSize} people</p>
+                  <p><strong>Difficulty:</strong> {selectedTour.difficulty}</p>
+                  <p><strong>Description:</strong> {selectedTour.description}</p>
+                </div>
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={() => setSelectedTour(null)}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                  >
+                    Close
+                  </button>
+                </div>
+              </motion.div>
+            </div>
           )}
         </motion.div>
       </div>
