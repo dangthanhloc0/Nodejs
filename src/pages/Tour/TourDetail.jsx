@@ -1,15 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaMapMarkerAlt, FaClock, FaCalendarAlt, FaUsers, FaDollarSign, FaInfoCircle } from 'react-icons/fa';
 import axiosInstance from '../../utils/axiosConfig';//cấu hình sẵn base Url 'http://localhost:3000/api'
 
+// Hàm decode JWT token
+const decodeToken = (token) => {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(c => {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (error) {
+    console.error('Error decoding token:', error);
+    return null;
+  }
+};
+
 const TourDetail = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [tourDetails, setTourDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDetailTour, setSelectedDetailTour] = useState(null);
+  const [showOrderForm, setShowOrderForm] = useState(false);
+  const [orderForm, setOrderForm] = useState({
+    numberpeople: 1,
+    totalprice: 0
+  });
+  const [orderError, setOrderError] = useState(null);
 
   console.log("Tour ID from URL params:", id);
 
@@ -42,6 +64,60 @@ const TourDetail = () => {
       fetchTourDetails();
     }
   }, [id]);
+
+  const handleOrderSubmit = async (e) => {
+    e.preventDefault();
+    setOrderError(null);
+
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      navigate('/login', { 
+        state: { from: `/tour/${id}` } 
+      });
+      return;
+    }
+
+    try {
+      // Decode token to get user information
+      const decodedToken = decodeToken(token);
+      if (!decodedToken || !decodedToken.id) {
+        throw new Error('Invalid token or user information not found');
+      }
+
+      const orderData = {
+        typeoforderid: 1, // Default to 1, adjust based on your business logic
+        user_id: decodedToken.id, // Get user ID from decoded token
+        numberpeople: orderForm.numberpeople,
+        totalprice: orderForm.totalprice,
+        detailtour_id: selectedDetailTour.id
+      };
+
+      console.log('Order data being sent:', orderData); // For debugging
+
+      const response = await axiosInstance.post('/order/create-order', orderData);
+      
+      if (response.data.success) {
+        alert('Đặt tour thành công!');
+        navigate('/my-orders');
+      } else {
+        setOrderError(response.data.message || 'Có lỗi xảy ra khi đặt tour');
+      }
+    } catch (err) {
+      console.error('Error creating order:', err);
+      setOrderError(err.response?.data?.message || 'Có lỗi xảy ra khi đặt tour');
+    }
+  };
+
+  // Update total price when number of people changes
+  useEffect(() => {
+    if (selectedDetailTour) {
+      setOrderForm(prev => ({
+        ...prev,
+        totalprice: selectedDetailTour.price * prev.numberpeople
+      }));
+    }
+  }, [selectedDetailTour, orderForm.numberpeople]);
 
   if (loading) {
     return (
@@ -191,13 +267,70 @@ const TourDetail = () => {
                 </p>
               </div>
               
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="mt-8 w-full bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold text-lg transition-colors duration-300"
-              >
-                Đặt Tour Này
-              </motion.button>
+              {!showOrderForm ? (
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="mt-8 w-full bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold text-lg transition-colors duration-300"
+                  onClick={() => setShowOrderForm(true)}
+                >
+                  Đặt Tour Này
+                </motion.button>
+              ) : (
+                <form onSubmit={handleOrderSubmit} className="mt-8 space-y-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Số người
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max={selectedDetailTour.numerseatunoccupied}
+                      value={orderForm.numberpeople}
+                      onChange={(e) => setOrderForm(prev => ({
+                        ...prev,
+                        numberpeople: parseInt(e.target.value)
+                      }))}
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-600">Giá vé người lớn:</span>
+                      <span className="font-semibold">${selectedDetailTour.price}</span>
+                    </div>
+                    <div className="flex justify-between items-center mt-2">
+                      <span className="text-gray-600">Tổng tiền:</span>
+                      <span className="text-xl font-bold text-blue-600">
+                        ${orderForm.totalprice}
+                      </span>
+                    </div>
+                  </div>
+
+                  {orderError && (
+                    <div className="text-red-500 text-sm">
+                      {orderError}
+                    </div>
+                  )}
+
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setShowOrderForm(false)}
+                      className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 py-4 px-6 rounded-lg font-semibold text-lg transition-colors duration-300"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="submit"
+                      className="flex-1 bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg font-semibold text-lg transition-colors duration-300"
+                    >
+                      Xác nhận đặt tour
+                    </button>
+                  </div>
+                </form>
+              )}
             </motion.div>
           )}
         </motion.div>

@@ -19,6 +19,7 @@ const tableRowVariants = {
 export default function Admin() {
   const [activeTab, setActiveTab] = useState('tours');
   const [tours, setTours] = useState([]);
+  const [tourTypes, setTourTypes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -27,29 +28,49 @@ export default function Admin() {
   
   // Form state for creating/editing tour
   const [formData, setFormData] = useState({
+    name: '',
+    typeoftours_id: '',
+    startplace: '',
+    endplace: '',
     title: '',
-    location: '',
-    price: '',
-    description: '',
+    day_number: '',
+    night_number: '',
     image: '',
     status: 'active'
   });
 
-  // Fetch tours on component mount
+  // Fetch tours and tour types on component mount
   useEffect(() => {
     fetchTours();
+    fetchTourTypes();
   }, []);
 
   const fetchTours = async () => {
     setLoading(true);
     try {
-      // Replace with your actual API endpoint
-      const response = await axios.get('http://localhost:3000/api/tours');
-      setTours(response.data);
+      const response = await axios.get(' http://localhost:3000/api/tour/get-all-tour');
+      if (response.data.state) {
+        setTours(response.data.data);
+      } else {
+        console.error('Error fetching tours:', response.data.message);
+      }
     } catch (error) {
       console.error('Error fetching tours:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTourTypes = async () => {
+    try {
+      const response = await axios.get('http://localhost:3000/api/tour/get-all-type-tour');
+      if (response.data.state) {
+        setTourTypes(response.data.data);
+      } else {
+        console.error('Error fetching tour types:', response.data.message);
+      }
+    } catch (error) {
+      console.error('Error fetching tour types:', error);
     }
   };
 
@@ -63,10 +84,13 @@ export default function Admin() {
 
   const openCreateModal = () => {
     setFormData({
+      name: '',
+      typeoftours_id: '',
+      startplace: '',
+      endplace: '',
       title: '',
-      location: '',
-      price: '',
-      description: '',
+      day_number: '',
+      night_number: '',
       image: '',
       status: 'active'
     });
@@ -76,10 +100,13 @@ export default function Admin() {
   const openEditModal = (tour) => {
     setCurrentTour(tour);
     setFormData({
+      name: tour.name,
+      typeoftours_id: tour.typeoftours_id,
+      startplace: tour.startplace,
+      endplace: tour.endplace,
       title: tour.title,
-      location: tour.location,
-      price: tour.price,
-      description: tour.description || '',
+      day_number: tour.day_number,
+      night_number: tour.night_number,
       image: tour.image,
       status: tour.status || 'active'
     });
@@ -90,12 +117,34 @@ export default function Admin() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Replace with your actual API endpoint
-      await axios.post('http://localhost:3000/api/tours', formData);
-      setShowCreateModal(false);
-      fetchTours();
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to create a tour');
+        return;
+      }
+
+      const response = await axios.post('http://localhost:3000/api/tour/create-tour', formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.data.state) {
+        setShowCreateModal(false);
+        fetchTours(); // Refresh the tours list
+        alert('Tour created successfully!');
+      } else {
+        alert(response.data.message || 'Failed to create tour');
+      }
     } catch (error) {
       console.error('Error creating tour:', error);
+      if (error.response?.status === 401) {
+        alert('Please login to create a tour');
+      } else if (error.response?.status === 403) {
+        alert('You do not have permission to create tours');
+      } else {
+        alert(error.response?.data?.message || 'Failed to create tour. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -105,12 +154,34 @@ export default function Admin() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Replace with your actual API endpoint
-      await axios.put(`http://localhost:3000/api/tours/${currentTour.id}`, formData);
-      setShowEditModal(false);
-      fetchTours();
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Please login to update a tour');
+        return;
+      }
+
+      const response = await axios.put(`http://localhost:3000/api/tour/update-tour/${currentTour.id}`, formData, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.data.state) {
+        setShowEditModal(false);
+        fetchTours(); // Refresh the tours list
+        alert('Tour updated successfully!');
+      } else {
+        alert(response.data.message || 'Failed to update tour');
+      }
     } catch (error) {
       console.error('Error updating tour:', error);
+      if (error.response?.status === 401) {
+        alert('Please login to update a tour');
+      } else if (error.response?.status === 403) {
+        alert('You do not have permission to update tours');
+      } else {
+        alert(error.response?.data?.message || 'Failed to update tour. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -120,12 +191,34 @@ export default function Admin() {
     if (window.confirm('Are you sure you want to delete this tour?')) {
       setLoading(true);
       try {
-        // Replace with your actual API endpoint
-        await axios.delete(`http://localhost:3000/api/tours/${tourId}`);
-        fetchTours();
-        setSelectedTour(null);
+        const token = localStorage.getItem('token');
+        if (!token) {
+          alert('Please login to delete a tour');
+          return;
+        }
+
+        const response = await axios.delete(`http://localhost:3000/api/tour/delete-tour/${tourId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.data.state) {
+          fetchTours();
+          setSelectedTour(null);
+          alert('Tour deleted successfully!');
+        } else {
+          alert(response.data.message || 'Failed to delete tour');
+        }
       } catch (error) {
         console.error('Error deleting tour:', error);
+        if (error.response?.status === 401) {
+          alert('Please login to delete a tour');
+        } else if (error.response?.status === 403) {
+          alert('You do not have permission to delete tours');
+        } else {
+          alert(error.response?.data?.message || 'Failed to delete tour. Please try again.');
+        }
       } finally {
         setLoading(false);
       }
@@ -227,7 +320,7 @@ export default function Admin() {
                       <tr>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tour Details</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
                         <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
                       </tr>
@@ -250,11 +343,11 @@ export default function Admin() {
                           </td>
                           <td className="px-6 py-4">
                             <div className="text-sm font-medium text-gray-900">{tour.title}</div>
-                            <div className="text-sm text-gray-500">{tour.location}</div>
-                            <div className="text-sm text-gray-500">Duration: {tour.duration} days</div>
+                            <div className="text-sm text-gray-500">{tour.name}</div>
+                            <div className="text-sm text-gray-500">From: {tour.startplace} To: {tour.endplace}</div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-sm font-semibold text-gray-900">${tour.price}</div>
+                            <div className="text-sm text-gray-900">{tour.day_number} days, {tour.night_number} nights</div>
                           </td>
                           <td className="px-6 py-4">
                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -343,108 +436,186 @@ export default function Admin() {
       {/* Modals */}
       {showCreateModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-      <motion.div
+          <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
-            className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-lg m-4"
-      >
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Tạo Tour Mới</h2>
-        <form onSubmit={handleCreateTour}>
-          <div className="grid grid-cols-1 gap-4">
-            <div>
-              <label className="block text-gray-700 mb-1">Tên Tour</label>
-              <input
-                type="text"
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded-lg"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 mb-1">Địa điểm</label>
-              <input
-                type="text"
-                name="location"
-                value={formData.location}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded-lg"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 mb-1">Giá</label>
-              <input
-                type="text"
-                name="price"
-                value={formData.price}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded-lg"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 mb-1">Mô tả</label>
-              <textarea
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded-lg"
-                rows="3"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 mb-1">URL Hình ảnh</label>
-              <input
-                type="text"
-                name="image"
-                value={formData.image}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded-lg"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-gray-700 mb-1">Trạng thái</label>
-              <select
-                name="status"
-                value={formData.status}
-                onChange={handleInputChange}
-                className="w-full p-2 border rounded-lg"
+            className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-4xl m-4"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Create New Tour</h2>
+              <button
+                onClick={() => setShowCreateModal(false)}
+                className="text-gray-500 hover:text-gray-700"
               >
-                <option value="active">Hiển thị</option>
-                <option value="inactive">Ẩn</option>
-              </select>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
             </div>
-          </div>
-          
-          <div className="flex justify-end gap-3 mt-6">
-            <button
-              type="button"
-              className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100"
-              onClick={() => setShowCreateModal(false)}
-            >
-              Hủy bỏ
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center"
-              disabled={loading}
-            >
-              {loading ? <FaSpinner className="animate-spin mr-2" /> : <FaPlus className="mr-2" />}
-              Tạo mới
-            </button>
-          </div>
-        </form>
-      </motion.div>
-    </div>
+
+            <form onSubmit={handleCreateTour} className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Tour Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      placeholder="Enter tour name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Tour Type</label>
+                    <select
+                      name="typeoftours_id"
+                      value={formData.typeoftours_id}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                    >
+                      <option value="">Select tour type</option>
+                      {tourTypes.map(type => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      placeholder="Enter tour title"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
+                    <input
+                      type="text"
+                      name="image"
+                      value={formData.image}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      placeholder="Enter image URL"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Start Place</label>
+                    <input
+                      type="text"
+                      name="startplace"
+                      value={formData.startplace}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      placeholder="Enter start place"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">End Place</label>
+                    <input
+                      type="text"
+                      name="endplace"
+                      value={formData.endplace}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      required
+                      placeholder="Enter end place"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Days</label>
+                      <input
+                        type="number"
+                        name="day_number"
+                        value={formData.day_number}
+                        onChange={handleInputChange}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                        min="1"
+                        placeholder="Days"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Nights</label>
+                      <input
+                        type="number"
+                        name="night_number"
+                        value={formData.night_number}
+                        onChange={handleInputChange}
+                        className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        required
+                        min="0"
+                        placeholder="Nights"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                    <select
+                      name="status"
+                      value={formData.status}
+                      onChange={handleInputChange}
+                      className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                    >
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-4 mt-8">
+                <button
+                  type="button"
+                  onClick={() => setShowCreateModal(false)}
+                  className="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 flex items-center space-x-2"
+                >
+                  {loading ? (
+                    <>
+                      <FaSpinner className="animate-spin" />
+                      <span>Creating...</span>
+                    </>
+                  ) : (
+                    <>
+                      <FaPlus />
+                      <span>Create Tour</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
       )}
 
       {showEditModal && (
