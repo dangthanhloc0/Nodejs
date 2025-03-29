@@ -28,18 +28,17 @@ export const getAllTourMethod =  async (req, res) => {
 // create tour enpoint 
 export const createTourMethod = async (req, res) => {
     console.log(req.body);
-    const { name, typeoftours_id, endplace, title, day_number, night_number, image , startplace} = req.body;
+    const { name, typeoftours_id, endplace, title, day_number, image , startplace} = req.body;
 
-    // Validate required fields
-    if (!name || !typeoftours_id || !endplace || !title || !day_number || !night_number || !image || !startplace) {
+
+    if (!name || !typeoftours_id || !endplace || !title || !day_number || !image || !startplace) {
         return res.status(400).json({ state: false, message: 'All fields are required' });
     }
 
-    // Create user instance
+    const night_number = day_number -1;
     const tour = new tourModel({name, typeoftours_id, endplace, title, day_number, night_number, image, startplace });
 
     try {
-        // Register user using auth service
         const response = await createTour(tour);
         if (response.state) {
             return res.status(201).json(response);

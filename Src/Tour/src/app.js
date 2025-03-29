@@ -7,8 +7,8 @@ import { checkConnection } from './config/db.js';
 import createAllTable from './utils/dbUtils.js';
 import authRoutes from './routes/authRoutes.js'
 import cors from 'cors'
-
-
+import { loadUserIntoBloom } from './config/bloomFilter.js';
+import { connectRedisClient } from './config/redis.js';
 const app = express();
 app.use(cors());
 
@@ -27,6 +27,10 @@ app.listen(3000, async() => {
     await checkConnection();
     // create all table 
     await createAllTable();
+    // load user into bloomfilter
+    await loadUserIntoBloom();
+    // conect redis
+    await connectRedisClient();
   } catch (error) {
     console.log("Failed to initialize the database",error);
     

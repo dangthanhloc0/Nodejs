@@ -8,7 +8,7 @@ export const CreateOrderMethod = async(req, res) => {
         }
         const order = new ordertourModel({typeoforderid,user_id,numberpeople,totalprice,detailtour_id});
         const response = await createOrder(order);
-        if (response.success) {
+        if (response.state) {
             return res.status(201).json(response);
         } else {
             return res.status(400).json(response);
