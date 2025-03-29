@@ -14,3 +14,14 @@ export const createOrder = async (ordertour) => {
    }
 }
 
+// Truy vấn OrderTours theo user_id
+export const getOrdersByUserId = async (user_id) => {
+  try {
+    const query = "SELECT * FROM OrderTours WHERE user_id = ?";
+    const [rows] = await pool.query(query, [user_id]);
+    return rows;
+  } catch (error) {
+    console.error("Lỗi khi truy vấn order theo user_id:", error.message);
+    throw error;
+  }
+};
