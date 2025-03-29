@@ -8,7 +8,7 @@ export const register = async (req, res) => {
 
     // Validate required fields
     if (!username || !email || !mobile || !password) {
-        return res.status(400).json({ success: false, message: 'All fields are required' });
+        return res.status(400).json({ state: false, message: 'All fields are required' });
     }
 
     // Create user instance
@@ -17,7 +17,7 @@ export const register = async (req, res) => {
     try {
         // Register user using auth service
         const response = await registerUser(user);
-        if (response.success) {
+        if (response.state) {
             return res.status(201).json(response);
         } else {
             return res.status(400).json(response);
@@ -25,7 +25,7 @@ export const register = async (req, res) => {
     } catch (error) {
         console.error('Error in user registration:', error);
         return res.status(500).json({ 
-            success: false, 
+            state: false, 
             message: 'Registration failed. Please try again later.' 
         });
     }
@@ -37,22 +37,23 @@ export const login = async (req, res) => {
 
     // Validate required fields
     if (!email || !password) {
-        return res.status(400).json({ success: false, message: 'Email and password are required' });
+        return res.status(400).json({ state: false, message: 'Email and password are required' });
     }
 
     try {
         // Call loginUser function from auth service
         const response = await loginUser(email, password);
         
-        if (response.success) {
-            return res.status(200).json(response); // Login successful
+        if (response.state) {
+            return res.status(200).json(response); // Login stateful
         } else {
+            console.log(response.message);
             return res.status(401).json(response); // Unauthorized
         }
     } catch (error) {
         console.error('Error in user login:', error);
         return res.status(500).json({ 
-            success: false, 
+            state: false, 
             message: 'Login failed. Please try again later.' 
         });
     }
@@ -66,19 +67,19 @@ export const getUserDetails = async (req, res) => {
     console.log(token);
 
     if (!token) {
-        return res.status(401).json({ success: false, message: 'Token not provided' });
+        return res.status(401).json({ state: false, message: 'Token not provided' });
     }
 
     try {
         const response = await getUserFromToken(token);
 
-        if (response.success) {
-            return res.status(200).json({ success: true, user: response.user });
+        if (response.state) {
+            return res.status(200).json({ state: true, user: response.user });
         } else {
-            return res.status(401).json({ success: false, message: response.message });
+            return res.status(401).json({ state: false, message: response.message });
         }
     } catch (error) {
         console.error('Error fetching user details:', error);
-        return res.status(500).json({ success: false, message: 'Failed to retrieve user details' });
+        return res.status(500).json({ state: false, message: 'Failed to retrieve user details' });
     }
 };
