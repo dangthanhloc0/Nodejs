@@ -23,7 +23,14 @@ export const createOrder = async (ordertour) => {
 // Truy vấn OrderTours theo user_id
 export const getOrdersByUserId = async (user_id) => {
   try {
-    const query = "SELECT * FROM OrderTours WHERE user_id = ?";
+    const query = `
+      SELECT ot.id, ot.user_id, ot.numberpeople, ot.totalprice, ot.detailtour_id, ot.date,
+             t.id AS typeoforderid, t.name AS typeoforder_name
+      FROM OrderTours ot
+      JOIN TypeOfOrders t ON ot.typeoforderid = t.id
+      WHERE ot.user_id = ?;
+    `;
+
     const [rows] = await pool.query(query, [user_id]);
     return rows;
   } catch (error) {
