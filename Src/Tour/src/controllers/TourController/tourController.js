@@ -56,11 +56,11 @@ export const createTourMethod = async (req, res) => {
 export const createDetailTourMethod = async (req,res) =>{
   try{
     console.log(req.body);
-    const {startday,endday,description,numerseatunoccupied,transportertourid,price,tour_id} = req.body;
-    if(!startday || !endday || !description  || !numerseatunoccupied || !transportertourid || !price || !tour_id ){
+    const {startday,endday,description,numerseatunoccupied,numberpeoplebooked,transportertourid,price,tour_id} = req.body;
+    if(!startday || !endday || !description  || !numerseatunoccupied || !numberpeoplebooked || !transportertourid || !price || !tour_id ){
         return res.status(400).json({State : false, message :'All fields are required'});
     }
-    const detailtour = new detailtourModel({startday,endday,description,numerseatunoccupied,transportertourid,price,tour_id});
+    const detailtour = new detailtourModel({startday,endday,description,numerseatunoccupied,numberpeoplebooked,transportertourid,price,tour_id});
     const response = await createDetailTour(detailtour);
     if(response.state == false){
         return res.status(400).json(response);
