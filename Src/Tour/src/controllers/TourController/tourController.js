@@ -1,6 +1,6 @@
 import tourModel from '../../models/tourModel.js';
 import detailtourModel from '../../models/detailtourModel.js';
-import { getAllTour, createTour ,createDetailTour ,getAllDetailTourByTourId } from '../../services/TourService/tourService.js';
+import { getAllTour, createTour ,createDetailTour ,getAllDetailTourByTourId, getListTours } from '../../services/TourService/tourService.js';
 
 
 // get all tour enpoint
@@ -21,7 +21,6 @@ export const getAllTourMethod =  async (req, res) => {
         });
     }
 };
-
 
 
 
@@ -94,3 +93,18 @@ export const getAllDetailTourMethod = async (req, res) => {
         });
     }
 };
+
+
+//Get List Tours
+export const getListToursController = async (req, res) => {
+    try {
+      const result = await getListTours();
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error("Lỗi tại getListToursController:", error);
+      return res.status(500).json({
+        state: false,
+        message: "Lỗi hệ thống. Vui lòng thử lại sau.",
+      });
+    }
+  };

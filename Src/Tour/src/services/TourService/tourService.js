@@ -110,3 +110,22 @@ export const getAllDetailTourByTourId = async (tourId) => {
         return { state: false, message: 'Get all detail tours failed' };
     }
 };
+
+
+
+//Get list tour
+export const getListTours = async () => {
+    try {
+      const query = `SELECT id, name FROM tours`; // Chỉ lấy id và name
+      const [tours] = await pool.query(query);
+  
+      if (!tours || tours.length === 0) {
+        return { state: false, message: "Không tìm thấy tour nào", data: [] };
+      }
+  
+      return { state: true, message: "Lấy danh sách tour thành công", data: tours };
+    } catch (error) {
+      console.error("Lỗi khi lấy danh sách tour:", error);
+      return { state: false, message: "Lỗi hệ thống khi lấy danh sách tour. Vui lòng thử lại sau." };
+    }
+};
