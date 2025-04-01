@@ -38,3 +38,54 @@ export const getOrdersByUserId = async (user_id) => {
     throw error;
   }
 };
+
+
+export const getOrdersByDetailTourId = async (detailtourid) => {
+  try{
+    const query = `
+    SELECT 
+        odt.*, 
+        dt.description, 
+        dt.startday, 
+        dt.endday, 
+        dt.numberpeoplebooked, 
+        dt.numerseatunoccupied, 
+        dt.transportertourid, 
+        dt.created_at,
+        dt.tour_id 
+    FROM ordertours odt
+    JOIN detailtours dt ON odt.detailtour_id = dt.id
+    WHERE odt.detailtour_id = ?;
+    `;
+    const values = [detailtourid];
+    const [orderDetailTourList] = await pool.query(query, values);
+
+    if (orderDetailTourList.length === 0) {
+       return { state: false, message: 'No detail tours found for this tour ID' };
+    }
+    return{
+      state: true,
+      message: 'Get order detail tour successfully',
+      data:{
+        detailtours:{
+          id: detailtourid,
+          description: orderDetailTourList[0].description,
+          startday: orderDetailTourList[0].startday,
+          endday: orderDetailTourList[0].endday,
+          numberpeoplebooked: orderDetailTourList[0].numberpeoplebooked,
+          numerseatunoccupied: orderDetailTourList[0].numerseatunoccupied,
+          transportertourid: orderDetailTourList[0].transportertourid,
+          created_at: orderDetailTourList[0].created_at,
+          tour_id: orderDetailTourList[0].tour_id
+        }
+        // ordertours: orderDetailTourList.map(order => ({
+        //   id: order.id,
+
+        // }))
+      }
+    };
+  }catch(error){
+    console.log('error when fetching data get order by detailtourid: error: '+error );
+    return {status : false,message : 'failed when get order by detailtourid'};
+  }
+};
