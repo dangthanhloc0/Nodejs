@@ -6,20 +6,15 @@ import { getAllTour, createTour ,createDetailTour ,getAllDetailTourByTourId, get
 // get all tour enpoint
 export const getAllTourMethod =  async (req, res) => {
     try {
-        // Register user using auth service
-        const response = await getAllTour();
-        if (response.state) {
-            return res.status(201).json(response);
-        } else {
-            return res.status(400).json(response);
-        }
-    } catch (error) {
-        console.error('Error in user registration:', error);
-        return res.status(500).json({ 
-            state: false, 
-            message: 'get All tour failed. Please try again later.' 
+        const result = await getAllTour();
+        return res.status(200).json(result);
+      } catch (error) {
+        console.error("Lỗi tại getAllToursController:", error);
+        return res.status(500).json({
+          state: false,
+          message: "Lỗi hệ thống. Vui lòng thử lại sau.",
         });
-    }
+      }
 };
 
 

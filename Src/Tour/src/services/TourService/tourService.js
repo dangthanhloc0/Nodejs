@@ -4,21 +4,18 @@ import { pool } from "../../config/db.js";
 // get all tour 
 export const getAllTour = async () => {
     try {
-        const query = `SELECT * ,tt.name as tyoftour_name
-                       FROM tours t
-                            JOIN typeoftours tt ON t.typeoftours_id = tt.id
-                       `
+        const query = `SELECT * FROM tours`; // Lấy toàn bộ dữ liệu từ bảng tours
         const [tours] = await pool.query(query);
-        
-        if (tours.length === 0) {
-            return { state: false, message: 'No tours found', data: [] };
+    
+        if (!tours || tours.length === 0) {
+          return { state: false, message: "Không tìm thấy tour nào", data: [] };
         }
-        
-        return { state: true, message: 'Tours retrieved successfully', data: tours };
-    } catch (error) {
-        console.error("Error fetching tours:", error);
-        return { state: false, message: 'Failed to retrieve tours. Please try again later.' };
-    }
+    
+        return { state: true, message: "Lấy danh sách tour thành công", data: tours };
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách tour:", error);
+        return { state: false, message: "Lỗi hệ thống khi lấy danh sách tour. Vui lòng thử lại sau." };
+      }
 };
 
 // create tour 
