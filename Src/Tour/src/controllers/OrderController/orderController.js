@@ -1,4 +1,4 @@
-import {createOrder, getOrdersByUserId} from '../../services/OrderService/orderService.js';
+import {createOrder, getOrdersByUserId,getOrdersByDetailTourId} from '../../services/OrderService/orderService.js';
 import ordertourModel from '../../models/ordertourModel.js';
 export const CreateOrderMethod = async(req, res) => {
     try{
@@ -48,3 +48,21 @@ export const getAllOrder = async (req, res) => {
     });
   }
 };
+
+
+export const getOrderDetailTour = async (req, res) => {
+  try{
+    const {id} = req.params;
+    console.log("Detail Tour ID:", id);
+    
+    const response = await getOrdersByDetailTourId(id);
+    if(response.state){
+      return res.status(200).json(response);
+    }else{
+      return res.status(404).json(response);
+    }
+  }catch(error){
+    console.error('Error in getOrderDetailTour:', error);
+    return res.status(500).json({status : false, message : 'get order detail tour failed'});
+  }
+}

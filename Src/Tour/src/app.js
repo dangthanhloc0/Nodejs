@@ -2,7 +2,9 @@
 import express from 'express';
 import userRoutes from './routes/userRoutes.js';
 import tourRoutes from './routes/tourRoutes.js';
-import orderRouters from './routes/orderRouters.js';  
+import orderRouters from './routes/orderRouters.js';
+import typetourRoutes from './routes/typetourRoutes.js';
+import transtourRoutes from './routes/transtourRoutes.js'; 
 import { checkConnection } from './config/db.js';
 import createAllTable from './utils/dbUtils.js';
 import authRoutes from './routes/authRoutes.js'
@@ -19,6 +21,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes); 
 app.use('/api/tour',tourRoutes); 
 app.use('/api/order',orderRouters);
+app.use('/api/typetour',typetourRoutes);
+app.use('/api/trans',transtourRoutes); 
 
 app.listen(3000, async() => {
   console.log('Server running on port 3000');

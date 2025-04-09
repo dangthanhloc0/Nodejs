@@ -1,27 +1,21 @@
 import tourModel from '../../models/tourModel.js';
 import detailtourModel from '../../models/detailtourModel.js';
-import { getAllTour, createTour ,createDetailTour ,getAllDetailTourByTourId } from '../../services/TourService/tourService.js';
+import { getAllTour, createTour ,createDetailTour ,getAllDetailTourByTourId, getListTours } from '../../services/TourService/tourService.js';
 
 
 // get all tour enpoint
 export const getAllTourMethod =  async (req, res) => {
     try {
-        // Register user using auth service
-        const response = await getAllTour();
-        if (response.state) {
-            return res.status(201).json(response);
-        } else {
-            return res.status(400).json(response);
-        }
-    } catch (error) {
-        console.error('Error in user registration:', error);
-        return res.status(500).json({ 
-            state: false, 
-            message: 'get All tour failed. Please try again later.' 
+        const result = await getAllTour();
+        return res.status(200).json(result);
+      } catch (error) {
+        console.error("Lỗi tại getAllToursController:", error);
+        return res.status(500).json({
+          state: false,
+          message: "Lỗi hệ thống. Vui lòng thử lại sau.",
         });
-    }
+      }
 };
-
 
 
 
@@ -57,11 +51,11 @@ export const createTourMethod = async (req, res) => {
 export const createDetailTourMethod = async (req,res) =>{
   try{
     console.log(req.body);
-    const {startday,endday,description,numerseatunoccupied,transportertourid,price,tour_id} = req.body;
-    if(!startday || !endday || !description  || !numerseatunoccupied || !transportertourid || !price || !tour_id ){
+    const {startday,endday,description,numerseatunoccupied,numberpeoplebooked,transportertourid,price,tour_id} = req.body;
+    if(!startday || !endday || !description  || !numerseatunoccupied || !numberpeoplebooked || !transportertourid || !price || !tour_id ){
         return res.status(400).json({State : false, message :'All fields are required'});
     }
-    const detailtour = new detailtourModel({startday,endday,description,numerseatunoccupied,transportertourid,price,tour_id});
+    const detailtour = new detailtourModel({startday,endday,description,numerseatunoccupied,numberpeoplebooked,transportertourid,price,tour_id});
     const response = await createDetailTour(detailtour);
     if(response.state == false){
         return res.status(400).json(response);
@@ -94,3 +88,18 @@ export const getAllDetailTourMethod = async (req, res) => {
         });
     }
 };
+
+
+//Get List Tours
+export const getListToursController = async (req, res) => {
+    try {
+      const result = await getListTours();
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error("Lỗi tại getListToursController:", error);
+      return res.status(500).json({
+        state: false,
+        message: "Lỗi hệ thống. Vui lòng thử lại sau.",
+      });
+    }
+  };

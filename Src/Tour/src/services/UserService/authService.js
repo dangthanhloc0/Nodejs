@@ -69,14 +69,15 @@ const getUserFromDatabase = (email) => {
             import mysql2 from 'mysql2/promise';
 
             (async () => {
-               const pool=mysql2.createPool({
-                   host:'127.0.0.1',
-                   user:'root',
-                   password:'1234',
-                   database:'tour',
-                   connectionLimit:10,
-                   queueLimit:0,
-                   waitForConnections:true
+              const pool = mysql2.createPool({
+                 host: 'localhost', 
+                 port: 3306, 
+                 user: 'root',
+                 password: '03102003',
+                 database: 'tour',
+                 connectionLimit: 10,
+                 queueLimit: 0,
+                 waitForConnections: true
                });
 
                 try {
